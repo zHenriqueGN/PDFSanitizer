@@ -1,4 +1,4 @@
-package sanitizer
+package controller
 
 import (
 	"os"

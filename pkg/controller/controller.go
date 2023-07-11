@@ -69,10 +69,15 @@ func CreateSanitizedPDFsFolder(PDFsMap map[string]models.PDFFile, logger *log.Lo
 		return
 	}
 
-	tasks := make(chan models.PDFFile)
-	results := make(chan string)
+	var buffer int
+	for range PDFsMap {
+		buffer++
+	}
 
-	for i := 0; i < 10; i++ {
+	tasks := make(chan models.PDFFile, buffer)
+	results := make(chan string, buffer)
+
+	for i := 0; i < 100; i++ {
 		go worker(tasks, results)
 	}
 
@@ -81,7 +86,8 @@ func CreateSanitizedPDFsFolder(PDFsMap map[string]models.PDFFile, logger *log.Lo
 	}
 	close(tasks)
 
-	for result := range results {
+	for i := 0; i < buffer; i++ {
+		result := <-results
 		logger.Println(result)
 	}
 

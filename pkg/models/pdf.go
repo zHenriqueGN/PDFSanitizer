@@ -1,6 +1,6 @@
 package models
 
 type PDFFile struct {
-	Name           string
-	LocationFolder string
+	Name string
+	Path string
 }

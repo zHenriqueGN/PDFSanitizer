@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"fmt"
 	"io"
+	"mime"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/zHenriqueGN/pdfSanitizer/pkg/models"
 )
@@ -42,13 +43,15 @@ func MapPDFFiles(folderPath string, PDFs *map[string]models.PDFFile) (err error)
 	}
 
 	for _, entry := range dirEntrys {
+		if !IsPDF(entry.Name()) {
+			continue
+		}
+
 		var PDF models.PDFFile
 		PDF.Name = entry.Name()
 		PDF.Path = path.Join(folderPath, PDF.Name)
 		if _, keyExists := (*PDFs)[PDF.Name]; !keyExists {
 			(*PDFs)[PDF.Name] = PDF
-		} else {
-			fmt.Println("Key exists", PDF.Name)
 		}
 	}
 
@@ -84,4 +87,11 @@ func CreateSanitizedPDFsFolder(PDFsMap map[string]models.PDFFile) (err error) {
 	}
 
 	return
+}
+
+// IsPDF returns true if a file is a PDF or false if not
+func IsPDF(filePath string) bool {
+	ext := filepath.Ext(filePath)
+	mimeType := mime.TypeByExtension(ext)
+	return mimeType == "application/pdf"
 }

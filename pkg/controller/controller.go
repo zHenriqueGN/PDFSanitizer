@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"mime"
@@ -68,27 +69,55 @@ func CreateSanitizedPDFsFolder(PDFsMap map[string]models.PDFFile, logger *log.Lo
 		return
 	}
 
-	for PDFName, PDF := range PDFsMap {
-		sourcePDF, err := os.Open(PDF.Path)
-		if err != nil {
-			return err
-		}
-		defer sourcePDF.Close()
+	var buffer int
+	for range PDFsMap {
+		buffer++
+	}
 
-		dstPDF, err := os.Create(path.Join(dstFolder, PDFName))
-		if err != nil {
-			return err
-		}
-		defer dstPDF.Close()
+	tasks := make(chan models.PDFFile, buffer)
+	results := make(chan string, buffer)
 
-		_, err = io.Copy(dstPDF, sourcePDF)
-		if err != nil {
-			return err
-		}
-		logger.Printf("'%s' copied to sanitized folder", PDF.Path)
+	for i := 0; i < 100; i++ {
+		go worker(tasks, results)
+	}
+
+	for _, PDF := range PDFsMap {
+		tasks <- PDF
+	}
+	close(tasks)
+
+	for i := 0; i < buffer; i++ {
+		result := <-results
+		logger.Println(result)
 	}
 
 	return
+}
+
+func copyPDFToSanitizedFolder(PDF models.PDFFile) string {
+	sourcePDF, err := os.Open(PDF.Path)
+	if err != nil {
+		return fmt.Sprintf("Error at file %s: %s", PDF.Path, err)
+	}
+	defer sourcePDF.Close()
+
+	dstPDF, err := os.Create(path.Join("sanitized_pdfs", PDF.Name))
+	if err != nil {
+		return fmt.Sprintf("Error at file %s: %s", PDF.Path, err)
+	}
+	defer dstPDF.Close()
+
+	_, err = io.Copy(dstPDF, sourcePDF)
+	if err != nil {
+		return fmt.Sprintf("Error at file %s: %s", PDF.Path, err)
+	}
+	return fmt.Sprintf("'%s' copied to sanitized folder", PDF.Path)
+}
+
+func worker(tasks <-chan models.PDFFile, results chan<- string) {
+	for task := range tasks {
+		results <- copyPDFToSanitizedFolder(task)
+	}
 }
 
 // IsPDF returns true if a file is a PDF or false if not

@@ -97,3 +97,15 @@ func IsPDF(filePath string) bool {
 	mimeType := mime.TypeByExtension(ext)
 	return mimeType == "application/pdf"
 }
+
+// CreateLogger generates a new logger to write logs in the standart output and
+// in a log file at the same time
+func CreateLogger() (logger *log.Logger, err error) {
+	logFile, err := os.OpenFile("sanitizerLogs.log", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return
+	}
+	defer logFile.Close()
+	logger = log.New(io.MultiWriter(logFile, os.Stdout), "", log.Ldate|log.Ltime)
+	return
+}

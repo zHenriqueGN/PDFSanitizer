@@ -7,7 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/zHenriqueGN/pdfSanitizer/pkg/models"
+	"github.com/zHenriqueGN/PDFSanitizer/pkg/models"
 )
 
 // GetRootFolders gets all the folders in the root

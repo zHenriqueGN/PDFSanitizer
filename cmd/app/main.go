@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/zHenriqueGN/pdfSanitizer/pkg/controller"
-	"github.com/zHenriqueGN/pdfSanitizer/pkg/models"
+	"github.com/zHenriqueGN/PDFSanitizer/pkg/controller"
+	"github.com/zHenriqueGN/PDFSanitizer/pkg/models"
 )
 
 func main() {

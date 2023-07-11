@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path"
 
@@ -43,11 +44,42 @@ func MapPDFFiles(folderPath string, PDFs *map[string]models.PDFFile) (err error)
 	for _, entry := range dirEntrys {
 		var PDF models.PDFFile
 		PDF.Name = entry.Name()
-		PDF.LocationFolder = path.Join(folderPath, PDF.Name)
+		PDF.Path = path.Join(folderPath, PDF.Name)
 		if _, keyExists := (*PDFs)[PDF.Name]; !keyExists {
 			(*PDFs)[PDF.Name] = PDF
 		} else {
 			fmt.Println("Key exists", PDF.Name)
+		}
+	}
+
+	return
+}
+
+// CreateSanitizedPDFsFolder move all the PDFs of a given map and move them
+// to a folder where all the pdfs are unique
+func CreateSanitizedPDFsFolder(PDFsMap map[string]models.PDFFile) (err error) {
+	dstFolder := "sanitized_pdfs"
+	err = os.MkdirAll(dstFolder, 0777)
+	if err != nil {
+		return
+	}
+
+	for PDFName, PDF := range PDFsMap {
+		sourcePDF, err := os.Open(PDF.Path)
+		if err != nil {
+			return err
+		}
+		defer sourcePDF.Close()
+
+		dstPDF, err := os.Create(path.Join(dstFolder, PDFName))
+		if err != nil {
+			return err
+		}
+		defer dstPDF.Close()
+
+		_, err = io.Copy(dstPDF, sourcePDF)
+		if err != nil {
+			return err
 		}
 	}
 

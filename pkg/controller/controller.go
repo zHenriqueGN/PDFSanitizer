@@ -61,7 +61,7 @@ func MapPDFFiles(folderPath string, PDFs *map[string]models.PDFFile) (err error)
 
 // CreateSanitizedPDFsFolder move all the PDFs of a given map and move them
 // to a folder where all the pdfs are unique
-func CreateSanitizedPDFsFolder(PDFsMap map[string]models.PDFFile) (err error) {
+func CreateSanitizedPDFsFolder(PDFsMap map[string]models.PDFFile, logger *log.Logger) (err error) {
 	dstFolder := "sanitized_pdfs"
 	err = os.MkdirAll(dstFolder, 0777)
 	if err != nil {
@@ -85,7 +85,7 @@ func CreateSanitizedPDFsFolder(PDFsMap map[string]models.PDFFile) (err error) {
 		if err != nil {
 			return err
 		}
-		log.Printf("'%s' copied to sanitized folder", PDF.Path)
+		logger.Printf("'%s' copied to sanitized folder", PDF.Path)
 	}
 
 	return
@@ -100,12 +100,11 @@ func IsPDF(filePath string) bool {
 
 // CreateLogger generates a new logger to write logs in the standart output and
 // in a log file at the same time
-func CreateLogger() (logger *log.Logger, err error) {
-	logFile, err := os.OpenFile("sanitizerLogs.log", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+func CreateLogger() (logFile *os.File, logger *log.Logger, err error) {
+	logFile, err = os.OpenFile("sanitizerLogs.log", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return
 	}
-	defer logFile.Close()
 	logger = log.New(io.MultiWriter(logFile, os.Stdout), "", log.Ldate|log.Ltime)
 	return
 }

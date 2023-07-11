@@ -2,6 +2,7 @@ package controller
 
 import (
 	"io"
+	"log"
 	"mime"
 	"os"
 	"path"
@@ -84,6 +85,7 @@ func CreateSanitizedPDFsFolder(PDFsMap map[string]models.PDFFile) (err error) {
 		if err != nil {
 			return err
 		}
+		log.Printf("'%s' copied to sanitized folder", PDF.Path)
 	}
 
 	return

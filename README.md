@@ -1,2 +1,2 @@
 # PDFSanitizer
-A Go aplication to sweep folders and centrilize PDFs
+A Go aplication to sweep folders and centralize PDFs
